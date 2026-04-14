@@ -1,0 +1,5 @@
+/* 全局防线：防止题目里的图片太大，撑破 Pad 端的屏幕排版 */
+.rich-text-content img {
+    max-width: 100%;
+    height: auto;
+}
