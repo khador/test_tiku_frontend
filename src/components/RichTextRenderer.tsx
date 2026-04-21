@@ -6,20 +6,19 @@ interface Props {
     htmlContent: string;
 }
 
-// 获取环境变量中的后端地址，默认回退到本地 8000 端口
 const BACKEND_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 const RichTextRenderer: React.FC<Props> = ({ htmlContent }) => {
     const sanitizedHtml = useMemo(() => {
         if (!htmlContent) return '';
 
-        // 1. 正则替换：拦截题干中的 <img> 标签，补全后端域名
-        const processedHtml = htmlContent.replace(
-            /src="\/images\//g,
-            `src="${BACKEND_URL}/images/`
-        );
+        // 【核心修复】：使用链式调用 (.replace().replace())
+        // 第一步补全后端域名，第二步把 .jpg 强制转成实际存在的 .png
+        const processedHtml = htmlContent
+            .replace(/src="\/images\//g, `src="${BACKEND_URL}/images/`)
+            .replace(/\.jpg/g, '.png');
 
-        // 2. DOMPurify 净化：防止 XSS 攻击，只允许图片和基本样式
+        // DOMPurify 净化 HTML 防止 XSS
         return DOMPurify.sanitize(processedHtml, {
             ADD_TAGS: ['img'],
             ADD_ATTR: ['src', 'style', 'class']

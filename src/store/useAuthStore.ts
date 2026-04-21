@@ -9,8 +9,8 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>((set) => ({
     // 初始化时从本地存储读取
-    token: localStorage.getItem('access_token') || 'fake_student_token',
-    role: localStorage.getItem('user_role') || "student",
+    token: localStorage.getItem('access_token'),
+    role: localStorage.getItem('user_role'),
 
     // 登录成功后保存状态
     setAuth: (token, role) => {
