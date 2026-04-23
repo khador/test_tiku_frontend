@@ -2,10 +2,10 @@ import axios from 'axios';
 import { message } from 'antd';
 
 const api = axios.create({
-    // 开发环境下默认请求本地 8000 端口，生产环境可通过环境变量覆盖
-    // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.23:8000',
-    baseURL: 'http://192.168.10.23:8000',
-    timeout: 10000,
+    // // 开发环境下默认请求本地 8000 端口，生产环境可通过环境变量覆盖
+    // // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.23:8000',
+    // baseURL: 'http://192.168.31.93:8000',
+    // timeout: 10000,
 });
 
 // 请求拦截器：自动携带 Token

@@ -28,7 +28,7 @@ const StudentLayout: React.FC = () => {
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f5f5' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', backgroundColor: '#f5f5f5' }}>
       {/* 内容区域 */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <Outlet />
