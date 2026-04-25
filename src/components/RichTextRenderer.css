@@ -1,5 +1,50 @@
-/* 全局防线：防止题目里的图片太大，撑破 Pad 端的屏幕排版 */
+/* src/components/RichTextRenderer.css */
+.rich-text-content {
+    width: 100%;
+    overflow-x: auto;
+    word-wrap: break-word;
+}
+
 .rich-text-content img {
+    max-width: 100vw !important; /* 🔥 关键：使用视口宽度，确保不超过屏幕 */
+    max-height: 80vh; /* 🔥 限制高度，防止超高图片 */
+    height: auto;
+    display: block;
+    margin: 8px auto;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* 🔥 针对不同屏幕尺寸的额外保护 */
+@media screen and (max-width: 768px) {
+    .rich-text-content img {
+        max-width: 95vw !important; /* 🔥 移动端更加保守的宽度 */
+        margin: 5px auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .rich-text-content img {
+        max-width: 90vw !important; /* 🔥 小屏设备进一步缩小 */
+        margin: 3px auto;
+    }
+}
+
+/* 🔥 额外的安全措施：对于容器也设置约束 */
+.rich-text-content {
     max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+/* 🔥 如果图片被包含在段落中，也要确保段落不会撑大 */
+.rich-text-content p {
+    margin: 0 0 10px 0;
+    overflow-x: hidden;
+}
+
+/* 🔥 确保表格内的图片也被约束 */
+.rich-text-content table img {
+    max-width: 100% !important;
     height: auto;
 }

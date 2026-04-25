@@ -3,26 +3,30 @@ import { create } from 'zustand';
 interface AuthState {
     token: string | null;
     role: string | null;
-    setAuth: (token: string, role: string) => void;
+    name: string | null; // ✨ 新增：存储用户的真实姓名
+    setAuth: (token: string, role: string, name: string) => void;
     clearAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-    // 初始化时从本地存储读取
-    token: localStorage.getItem('access_token'),
-    role: localStorage.getItem('user_role'),
+    // 初始化时从本地存储读取，确保刷新页面不丢失状态
+    token: localStorage.getItem('token'),
+    role: localStorage.getItem('role'),
+    name: localStorage.getItem('name'),
 
-    // 登录成功后保存状态
-    setAuth: (token, role) => {
-        localStorage.setItem('access_token', token);
-        localStorage.setItem('user_role', role);
-        set({ token, role });
+    // 登录成功后保存所有状态
+    setAuth: (token, role, name) => {
+        localStorage.setItem('token', token);
+        localStorage.setItem('role', role);
+        localStorage.setItem('name', name);
+        set({ token, role, name });
     },
 
-    // 退出或 token 失效时清除状态
+    // 退出登录时清除所有状态
     clearAuth: () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user_role');
-        set({ token: null, role: null });
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('name');
+        set({ token: null, role: null, name: null });
     }
 }));

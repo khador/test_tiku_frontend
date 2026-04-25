@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthGuard } from './router/AuthGuard';
+import AuthGuard from './router/AuthGuard';
 import Login from './views/Login';
 import AdminLayout from './layout/AdminLayout';
 import StudentLayout from './layout/StudentLayout'; // 引入学生布局

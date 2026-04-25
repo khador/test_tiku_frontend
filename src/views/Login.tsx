@@ -10,38 +10,41 @@ const Login: React.FC = () => {
     const navigate = useNavigate();
     const setAuth = useAuthStore((state) => state.setAuth);
 
-    // 表单提交成功的回调
     const onFinish = async (values: any) => {
         setLoading(true);
         try {
-            // 1. 发送登录请求 (根据你的 Django SimpleJWT 后端配置)
+            // 发送登录请求
             const res: any = await api.post('/api/login/', {
                 username: values.username,
                 password: values.password,
             });
 
-            // 2. 提取 Token 和角色 (这里假设后端返回 { access: "...", role: "..." })
-            // 注意：具体的字段名需要根据你 Django 序列化器 CustomTokenObtainPairSerializer 的实际返回调整
-            const token = res.access || res.token;
-            const role = res.role;
+            // ✨ 直接从后端 CustomTokenObtainPairSerializer 的返回体中解构数据
+            const { access, role, real_name } = res;
 
-            if (!token || !role) {
-                throw new Error("后端返回数据格式异常，缺少 token 或 role");
+            if (!access || !role) {
+                throw new Error("后端返回数据格式异常，缺少核心字段");
             }
 
-            // 3. 存入全局仓库
-            setAuth(token, role);
-            message.success('登录成功！');
+            // 如果后端没有返回 real_name，则使用用户名作为兜底显示
+            const displayName = real_name || values.username;
 
-            // 4. 根据角色动态跳转到对应的控制台
-            if (role === 'admin') navigate('/admin/dashboard');
-            else if (role === 'teacher') navigate('/teacher/dashboard');
-            else if (role === 'student') navigate('/student/dashboard');
+            // 存入全局仓库
+            setAuth(access, role, displayName);
+            message.success(`欢迎回来，${displayName}！`);
+
+            // 根据角色动态跳转
+            if (role === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (role === 'teacher') {
+                navigate('/teacher/dashboard');
+            } else if (role === 'student') {
+                navigate('/student/dashboard');
+            }
 
         } catch (error: any) {
-            // 错误已在 request.ts 中被拦截并提示过，这里通常不需要额外处理
-            // 但如果是 400 等错误导致走到这里，可以解除 loading 状态
             console.error("登录失败", error);
+            // 具体的错误提示通常已在 request.ts 的响应拦截器中处理
         } finally {
             setLoading(false);
         }
@@ -58,7 +61,6 @@ const Login: React.FC = () => {
             <Card title="题库系统登录" style={{ width: 400, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
                 <Form
                     name="login_form"
-                    initialValues={{ remember: true }}
                     onFinish={onFinish}
                     size="large"
                 >

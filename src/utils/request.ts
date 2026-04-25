@@ -1,46 +1,39 @@
 import axios from 'axios';
-import { message } from 'antd';
+import { useAuthStore } from '../store/useAuthStore';
+import { message } from 'antd'; // 或 antd-mobile 的 Toast
 
 const api = axios.create({
-    // // 开发环境下默认请求本地 8000 端口，生产环境可通过环境变量覆盖
-    // // baseURL: import.meta.env.VITE_API_BASE_URL || 'http://192.168.10.23:8000',
-    // baseURL: 'http://192.168.31.93:8000',
-    // timeout: 10000,
+    baseURL: import.meta.env.VITE_API_URL || 'http://192.168.31.93:8000',
+    timeout: 10000,
 });
 
-// 请求拦截器：自动携带 Token
+// 请求拦截器
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('access_token');
+    // 💡 关键：直接从 Zustand 的 getState() 获取最新 token，而不是只在文件初始化时取一次
+    const token = useAuthStore.getState().token;
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-});
+}, (error) => Promise.reject(error));
 
-// 响应拦截器：严格处理需求单中的 401 和 403
+// 响应拦截器
 api.interceptors.response.use(
-    (response) => response.data,
+    (response) => response.data, // 约定俗成：直接返回 data 层，页面里就不用 res.data.xxx 了
     (error) => {
-        const status = error.response?.status;
-
-        if (status === 401) {
-            // 401：清除本地数据，强制跳回登录页
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_role');
-            message.error('登录已过期，请重新登录');
-            window.location.href = '/login';
-
-        } else if (status === 403) {
-            // 403：只提示无权限，不删 token，根据当前角色安全回退
-            message.warning('无权限访问该页面');
-            const role = localStorage.getItem('user_role');
-            if (role === 'admin') window.location.href = '/admin/dashboard';
-            else if (role === 'teacher') window.location.href = '/teacher/dashboard';
-            else if (role === 'student') window.location.href = '/student/dashboard';
-
+        if (error.response) {
+            if (error.response.status === 401) {
+                // 💡 关键：Token 失效，强制登出并跳转
+                useAuthStore.getState().clearAuth();
+                message.error('登录已过期，请重新登录');
+                window.location.href = '/login'; // 强暴但有效的路由跳转
+            } else if (error.response.status === 403) {
+                message.error('您没有权限执行此操作');
+            } else {
+                message.error(error.response.data?.detail || '服务器请求失败');
+            }
         } else {
-            // 其他错误（如 400 业务报错，500 服务器崩了）
-            message.error(error.response?.data?.detail || '网络请求错误，请稍后重试');
+            message.error('网络连接异常，请检查网络');
         }
         return Promise.reject(error);
     }
